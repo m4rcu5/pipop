@@ -26,15 +26,18 @@ $file = isset($_FILES['image']) ? $_FILES['image'] : null;
 
 
 if (null === $file || $file['error'] !== UPLOAD_ERR_OK) {
-    die('no file found');
+	header('X-PHP-Response-Code: 500', true, 500);
+    die('No file found');
 }
 
 if (null === $hash) {
-    die('move along, nothing to see here');
+	header('X-PHP-Response-Code: 401', true, 401);
+    die('Move along, nothing to see here');
 }
 
 if (false === isSigned($sharedSecret, $file['tmp_name'], $hash)) {
-    die('move along, nothing to see here');
+	header('X-PHP-Response-Code: 401', true, 401);
+    die('Move along, nothing to see here');
 }
 
 // log that a succesful request came in
@@ -43,4 +46,4 @@ file_put_contents($logFile, date('c') . " || " . filesize($file['tmp_name']) . "
 // move the file
 move_uploaded_file($file['tmp_name'], $fileDestination);
 
-die('ok');
+die('OK');
