@@ -4,11 +4,10 @@
 $sharedSecret = "556f6ca0435179373326a788a42d559b729e1a50d3aa11a8d7466339a2ccef3b";
 
 // the destination where the image will be moved
-$fileDestination = "/tmp/image.jpg";
+$fileDestination = "image.jpg";
 
 // file where successful requests are logged
-$logFile = "/tmp/log.txt";
-
+$logFile = "log.txt";
 
 function isSigned($secret, $filename, $hash) {
     // read the image from the request and base64 encode it
