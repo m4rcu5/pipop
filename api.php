@@ -24,18 +24,18 @@ $file = isset($_FILES['image']) ? $_FILES['image'] : null;
 
 // bad request from the client
 if (null === $file || $file['error'] !== UPLOAD_ERR_OK) {
-	header('X-PHP-Response-Code: 500', true, 500);
+    header('X-PHP-Response-Code: 500', true, 500);
     die('No file found');
 }
 
 if (null === $hash) {
-	header('X-PHP-Response-Code: 401', true, 401);
+    header('X-PHP-Response-Code: 401', true, 401);
     die('Move along, nothing to see here');
 }
 
 // unauthenticated request from the client
 if (false === isSigned($sharedSecret, $file['tmp_name'], $hash)) {
-	header('X-PHP-Response-Code: 401', true, 401);
+    header('X-PHP-Response-Code: 401', true, 401);
     die('Move along, nothing to see here');
 }
 
