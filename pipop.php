@@ -15,16 +15,19 @@
               |_|                         |___/
  ****************************************************/
 
-// Upload interval
+// Upload interval, in seconds
 $fileMaxAge = 60;
 
 // the destination where the image will be moved
 $fileDestination = "image.jpg";
 
+// If there is an image and we are not uploading a new image (POST), then serve it.
 if ('POST' !== $_SERVER['REQUEST_METHOD'] AND true === file_exists($fileDestination)) {
+    // Get information about the image to construct the necessary http response headers
     $size = filesize($fileDestination);
     $mtime = filemtime($fileDestination);
 
+    // The image expires $fileMaxAge seconds after it was created
     $lastModified = gmdate('D, d M Y H:i:s \G\M\T', $mtime);
     $expires = gmdate('D, d M Y H:i:s \G\M\T', $mtime + $fileMaxAge);
 
@@ -37,6 +40,7 @@ if ('POST' !== $_SERVER['REQUEST_METHOD'] AND true === file_exists($fileDestinat
     header("HTTP/1.1 200 OK");
     readfile($fileDestination);
 
+    // We served the image so we are done.
     die();
 }
 
