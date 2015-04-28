@@ -40,7 +40,7 @@ if (false === isSigned($sharedSecret, $file['tmp_name'], $hash)) {
 }
 
 // log that a succesful request came in
-file_put_contents($logFile, date('c') . " || " . filesize($file['tmp_name']) . " bytes\n", FILE_APPEND);
+file_put_contents($logFile, date('c') . "\t" . filesize($file['tmp_name']) . " bytes written to {$fileDestination}\n", FILE_APPEND);
 
 // move the file
 move_uploaded_file($file['tmp_name'], $fileDestination);
