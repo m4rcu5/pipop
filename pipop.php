@@ -1,10 +1,32 @@
 <?php
 
-// shared secret between client and server
-$sharedSecret = "556f6ca0435179373326a788a42d559b729e1a50d3aa11a8d7466339a2ccef3b";
+// Upload interval
+$fileMaxAge = 60;
 
 // the destination where the image will be moved
 $fileDestination = "image.jpg";
+
+if ('POST' !== $_SERVER['REQUEST_METHOD'] AND true === file_exists($fileDestination)) {
+    $size = filesize($fileDestination);
+    $mtime = filemtime($fileDestination);
+
+    $lastModified = gmdate('D, d M Y H:i:s \G\M\T', $mtime);
+    $expires = gmdate('D, d M Y H:i:s \G\M\T', $mtime + $fileMaxAge);
+
+    header('Content-Type: '   . 'image/jpeg');
+    header('Content-Length: ' . $size);
+    header('Cache-Control: '  . 'public, max-age=' . $fileMaxAge);
+    header('Last-Modified: '  . $lastModified);
+    header('Expires: '        . $expires);
+
+    header("HTTP/1.1 200 OK");
+    readfile($fileDestination);
+
+    die();
+}
+
+// shared secret between client and server
+$sharedSecret = "556f6ca0435179373326a788a42d559b729e1a50d3aa11a8d7466339a2ccef3b";
 
 // file where successful requests are logged
 $logFile = "log.txt";
