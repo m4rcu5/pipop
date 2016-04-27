@@ -27,6 +27,8 @@ imgHeight = 600
 imageServer = 'http://imgur.mydomain.tld/api.php'
 sharedSecret = '556f6ca0435179373326a788a42d559b729e1a50d3aa11a8d7466339a2ccef3b'
 
+cameraName = os.uname()[1]
+
 # Say hello to the log
 logging.info('Starting up!')
 
@@ -64,6 +66,7 @@ atexit.register(removePIDfile)
 # Image capturing
 #
 import subprocess
+from wand.image import Image
 
 logging.info('Taking image...')
 
@@ -95,8 +98,6 @@ except Exception as e:
 #
 # Image processing
 #
-from wand.image import Image
-
 logging.info('Resizing image...')
 
 # Resize our image to a usage dimension
@@ -126,7 +127,10 @@ hash = hmac.new(sharedSecret, encoded_string, hashlib.sha256).hexdigest()
 response = requests.post(
     imageServer,
     files={'image': imgBlob},
-    headers={'x-hash': hash}
+    headers={
+        'x-hash': hash,
+        'x-camera': cameraName
+    }
 )
 
 logging.info('Response form server: ' + response.text)

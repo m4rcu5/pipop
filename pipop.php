@@ -1,18 +1,27 @@
 <?php
 
-// Upload interval, in seconds
+// upload interval, in seconds
 $fileMaxAge = 60;
 
-// the destination where the image will be moved
-$fileDestination = "image.jpg";
+// the destination where the images will be moved
+$destinationFolder = "images/";
 
-// If there is an image and we are not uploading a new image (POST), then serve it.
-if ('POST' !== $_SERVER['REQUEST_METHOD'] AND true === file_exists($fileDestination)) {
-    // Get information about the image to construct the necessary http response headers
+// if we are not uploading a new image (POST), then try to serve an existing one
+if ('POST' !== $_SERVER['REQUEST_METHOD'] && true === isset($_GET['camera'])) {
+    $fileHash = sha1($_GET['camera']);
+    $fileDestination = $destinationFolder . $fileHash . '.jpg';
+
+    // return 404 of the file is not there
+    if (true !== file_exists($fileDestination)) {
+        header('X-PHP-Response-Code: 404', true, 404);
+        die('Image file not found');
+    }
+
+    // get information about the image to construct the necessary http response headers
     $size = filesize($fileDestination);
     $mtime = filemtime($fileDestination);
 
-    // The image expires $fileMaxAge seconds after it was created
+    // the image expires $fileMaxAge seconds after it was created
     $lastModified = gmdate('D, d M Y H:i:s \G\M\T', $mtime);
     $expires = gmdate('D, d M Y H:i:s \G\M\T', $mtime + $fileMaxAge);
 
@@ -25,7 +34,7 @@ if ('POST' !== $_SERVER['REQUEST_METHOD'] AND true === file_exists($fileDestinat
     header("HTTP/1.1 200 OK");
     readfile($fileDestination);
 
-    // We served the image so we are done.
+    // we served the image, so we are done
     die();
 }
 
@@ -45,8 +54,9 @@ function isSigned($secret, $filename, $hash) {
     return $hash === $calculatedHash;
 }
 
-$hash = isset($_SERVER['HTTP_X_HASH']) ? $_SERVER['HTTP_X_HASH'] : null;
-$file = isset($_FILES['image']) ? $_FILES['image'] : null;
+$hash   = isset($_SERVER['HTTP_X_HASH']) ? $_SERVER['HTTP_X_HASH'] : null;
+$camera = isset($_SERVER['HTTP_X_CAMERA']) ? $_SERVER['HTTP_X_CAMERA'] : null;
+$file   = isset($_FILES['image']) ? $_FILES['image'] : null;
 
 // bad request from the client
 if (null === $file || $file['error'] !== UPLOAD_ERR_OK) {
@@ -54,7 +64,8 @@ if (null === $file || $file['error'] !== UPLOAD_ERR_OK) {
     die('No file found');
 }
 
-if (null === $hash) {
+// no hash or camera provided by the client
+if (null === $hash || null === $camera) {
     header('X-PHP-Response-Code: 401', true, 401);
     die('Move along, nothing to see here');
 }
@@ -64,6 +75,10 @@ if (false === isSigned($sharedSecret, $file['tmp_name'], $hash)) {
     header('X-PHP-Response-Code: 401', true, 401);
     die('Move along, nothing to see here');
 }
+
+// calculate new file name
+$fileHash = sha1($camera);
+$fileDestination = $destinationFolder . $fileHash . '.jpg';
 
 // log that a succesful request came in
 file_put_contents($logFile, date('c') . "\t" . filesize($file['tmp_name']) . " bytes written to {$fileDestination}\n", FILE_APPEND);
